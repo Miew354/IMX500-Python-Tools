@@ -31,7 +31,7 @@ def parse_detections(metadata: dict):
     scores, classes = np_outputs[1][0], np_outputs[2][0]
 
     detections = [
-        Detection(category, score, metadata)
+        Detection(category, score)
         for score, category in zip(scores, classes)
     ]
     return detections
