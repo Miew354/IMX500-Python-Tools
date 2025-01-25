@@ -27,9 +27,10 @@ queue_maxsize = 100  # Set the maximum items in the detection queue
 
 class DetectionQueue(queue.Queue):
     """Queue to store AI detections."""
-    def __init__(self, maxsize=0):
+    def __init__(self, maxsize=0, verbose=False):
         super().__init__(maxsize=maxsize)
         self.lock = threading.Lock()
+        self.verbose = verbose
 
     def add_detection(self, detection):
         with self.lock:
@@ -37,7 +38,8 @@ class DetectionQueue(queue.Queue):
                 print("Queue is full. Removing oldest detections...")
                 self.get()  # Remove the oldest detection to make space
             self.put((detection, time.time()))
-            #print(f"Detection added: {detection}")
+            if self.verbose:
+                print(f"Detection added: {detection}")
 
     def get_detection(self):
         with self.lock:
@@ -113,7 +115,6 @@ def mock_detections(detection_queue: DetectionQueue):
         detections = generate_mock_detections()
         for detection in detections:
             detection_queue.add_detection(detection)
-        #print("Generated detections:", detections)
         time.sleep(1)
 
 def detections_pipe(detection_queue: DetectionQueue):
@@ -124,12 +125,11 @@ def detections_pipe(detection_queue: DetectionQueue):
         detections = get_detections()
         for detection in detections:
             detection_queue.add_detection(detection)
-        #print("Camera detections:", detections)
         time.sleep(1)
 
 detectionQ = DetectionQueue(maxsize=queue_maxsize)
 
-def start_server(mode):
+def start_server(mode, verbose=False):
     threading.Thread(
         target=unix_socket_server,
         args=("/tmp/detections.sock", detectionQ),
@@ -155,18 +155,20 @@ def stop_server():
     if mode == "camera":
         print("Stopping camera...")
         manage_camera(start=False)
-        # Add any additional cleanup for camera detections here
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python detections_queue.py [start|stop] [mock|camera]")
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print("Usage: python detections_queue.py [start|stop] [mock|camera] [--verbose]")
         sys.exit(1)
 
     command = sys.argv[1]
     mode = sys.argv[2]
+    verbose = "--verbose" in sys.argv
+
+    detectionQ = DetectionQueue(maxsize=queue_maxsize, verbose=verbose)
+
     if command == "start":
-        start_server(mode)
-        # Keep this main thread running so the daemon thread continues
+        start_server(mode, verbose)
         print("Press Ctrl+C to exit...")
         try:
             while True:
