@@ -25,6 +25,9 @@ python3 -m venv --system-site-packages IMX500-Python-Tools
 # Activate the virtual environment
 source IMX500-Python-Tools/bin/activate
 
+# Uninstall conflicting NumPy
+pip uninstall -y numpy
+
 echo "Setup complete. You can now run the application using './run.sh'."
 
 # Reboot option:

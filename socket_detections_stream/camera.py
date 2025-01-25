@@ -12,6 +12,7 @@ from config import model
 
 detections = []
 imx500 = IMX500(model)
+picam2 = Picamera2(imx500.camera_num)
 
 class Detection:
     def __init__(self, category, conf):
@@ -44,7 +45,6 @@ def manage_camera(start=True):
         print("The selected model is not object detection", file=sys.stderr)
         exit()
 
-    picam2 = Picamera2(imx500.camera_num)
     config = picam2.create_preview_configuration(controls={"FrameRate": 5}, buffer_count=12)
 
     if start:
@@ -55,7 +55,7 @@ def manage_camera(start=True):
 
 def get_detections():
     while True:
-        metadata = imx500.get_metadata()
+        metadata = picam2.capture_metadata()
         detections = parse_detections(metadata)
         return detections
     

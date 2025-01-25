@@ -10,6 +10,11 @@ To install the required dependencies, run:
    sudo chmod +x install.sh
    ./install.sh
    ```
+Activate the environment:
+
+    ```bash
+    source IMX500-Python-Tools/bin/activate
+    ```
 ## Tools
 
 ### model_chacher/model_cacher.py
@@ -23,18 +28,21 @@ To install the required dependencies, run:
     #### Usage
 
     To start the server and pipe generated mock detections:
+
     ```bash
-    python socket_detections_stream/app.py start mock
+    python ./app.py start mock
     ```
 
     To start the server, camera and pipe IMX500 detections:
+
     ```bash
-    python socket_detections_stream/app.py start camera
+    python ./app.py start camera
     ```
 
     To stop the server:
+
     ```bash
-    python socket_detections_stream/app.py stop
+    python ./app.py stop
     ```
 
     #### Test Clients:
