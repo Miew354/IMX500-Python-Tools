@@ -6,15 +6,15 @@ This repository contains Python tools for working with the Raspi IMX500 sensor. 
 
 To install the required dependencies, run:
 
-   ```bash
-   sudo chmod +x install.sh
-   ./install.sh
-   ```
+```bash
+sudo chmod +x install.sh
+./install.sh
+```
 Activate the environment:
 
-    ```bash
-    source IMX500-Python-Tools/bin/activate
-    ```
+```bash
+source IMX500-Python-Tools/bin/activate
+```
 ## Tools
 
 ### model_chacher/model_cacher.py
@@ -23,28 +23,28 @@ Activate the environment:
 
 ### socket_detections_stream/app.py
 
-    This script pipes the detections to a Unix socket in JSON format.
+This script pipes the detections to a Unix socket in JSON format.
 
-    #### Usage
+#### Usage
 
-    To start the server and pipe generated mock detections:
+To start the server and pipe generated mock detections:
 
-    ```bash
-    python ./app.py start mock
-    ```
+```bash
+python ./app.py start mock
+```
 
-    To start the server, camera and pipe IMX500 detections:
+To start the server, camera and pipe IMX500 detections:
 
-    ```bash
-    python ./app.py start camera
-    ```
+```bash
+python ./app.py start camera
+```
 
-    To stop the server:
+To stop the server:
 
-    ```bash
-    python ./app.py stop
-    ```
+```bash
+python ./app.py stop
+```
 
-    #### Test Clients:
+#### Test Clients:
 
-    There's two example client scripts that connect to the socket and process detection data.
+There's two example client scripts that connect to the socket and process detection data.

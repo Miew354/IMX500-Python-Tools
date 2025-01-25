@@ -28,7 +28,7 @@ def parse_detections(metadata: dict):
     input_h = imx500.get_input_size()
     if np_outputs is None:
         return detections
-    scores, classes = np_outputs[0][0], np_outputs[1][0], np_outputs[2][0]
+    scores, classes = np_outputs[1][0], np_outputs[2][0]
 
     detections = [
         Detection(category, score, metadata)
