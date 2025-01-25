@@ -1,4 +1,4 @@
-#This script caches the model on the IMX500 through camera start
+#This script caches the model on the IMX500 by starting and stopping the camera.
 #uses default IMX500 firmware
 
 import argparse
@@ -12,7 +12,7 @@ from picamera2.devices import IMX500
 from picamera2.devices.imx500 import (NetworkIntrinsics, postprocess_nanodet_detection)
 
 #change this to cache custom models 
-model = "/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk"
+model = '/usr/share/imx500-models/imx500_network_efficientdet_lite0_pp.rpk'
 
 imx500 = IMX500(model)
 intrinsics = imx500.network_intrinsics
