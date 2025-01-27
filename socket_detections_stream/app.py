@@ -37,7 +37,7 @@ class DetectionQueue(queue.Queue):
     def add_detection(self, detection):
         with self.lock:
             if self.full():
-                self.get()  # Remove the oldest detection to make space
+                self.get()  # Remove the oldest detection to make space if full
                 if self.verbose:
                     print("Queue is full. Removed oldest detections.")
             self.put((detection, time.time()))
@@ -48,17 +48,17 @@ class DetectionQueue(queue.Queue):
         with self.lock:
             while not self.empty():
                 detection, timestamp = self.queue[0]
-                if time.time() - timestamp > detection_timeout:  # remove old detections
-                    self.get()
+                if (time.time() - timestamp) > detection_timeout:  # remove old detections
                     if self.verbose:
                         print(f"Detection timed out: {detection}")
+                    self.get()
                 else:
-                    return self.get()[0]  # Return only the detection part
+                    return self.get()[0] 
             return None
 
-server_socket = None  # Reference to the server socket
-clients = {}  # Dictionary to store connected clients
-client_id_counter = 0  # Counter to generate unique client IDs
+server_socket = None 
+clients = {}  # Dictionary of connected clients
+client_id_counter = 0  # generate unique client IDs
 
 def unix_socket_server(socket_path, detection_queue: DetectionQueue):
     """Unix socket server that sends queued detections to connected clients."""
@@ -129,7 +129,7 @@ def udp_server(host, port, detection_queue: DetectionQueue):
             for client_addr in list(clients):
                 try:
                     udp_sock.sendto(message, client_addr)
-                except OSError:
+                except socket.error:
                     print(f"Client {client_addr} disconnected")
                     clients.remove(client_addr)
 
