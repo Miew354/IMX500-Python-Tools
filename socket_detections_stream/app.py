@@ -50,6 +50,23 @@ class DetectionQueue(queue.Queue):
                 return self.get()[0] 
             return None
 
+    def detection_timeout(self):
+        """Remove detections that have been in the queue longer than detection_timeout."""
+        while True:
+            with self.lock:
+                current_time = time.time()
+                if detection_timeout <= 0:
+                    return
+                while not self.empty():
+                    detection, timestamp = self.queue[0]
+                    if current_time - timestamp > detection_timeout:
+                        removed_detection = self.get()
+                        if self.verbose:
+                            print("Detection Timeout:", removed_detection)
+                    else:
+                        break
+            time.sleep(detection_timeout)
+
 server_socket = None 
 clients = {}  # Dictionary of connected clients
 client_id_counter = 0  # generate unique client IDs
@@ -205,6 +222,12 @@ def start_server(mode, verbose=False):
     elif mode == "camera":
         threading.Thread(
             target=detections_pipe,
+            args=(detectionQ,),
+            daemon=True
+        ).start()
+    if detection_timeout > 0:
+        threading.Thread(
+            target=detection_timeout,
             args=(detectionQ,),
             daemon=True
         ).start()

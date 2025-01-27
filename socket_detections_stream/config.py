@@ -11,14 +11,13 @@ detection_threshold = 0.5
 stream_freq = 0.5
 
 #Camera Frame rate
-frame_rate = 5
+frame_rate = 20
 
-#Detection timeout in seconds
-#Note: detection timeout only checked while a client is connected
+#Detection timeout in seconds, set to zero to disable
 detection_timeout = 2
 
 #Maximum items in the detection queue
-queue_maxsize = 10
+queue_maxsize = 100
 
 #Set True to enable built in UDP mode for remote testing (Leave False for Unix socket)
 use_udp = False  
