@@ -1,5 +1,5 @@
 #This script caches the model on the IMX500 by starting and stopping the camera.
-#uses default IMX500 firmware
+#uses default Raspi IMX500 firmware
 
 import argparse
 import sys

@@ -45,7 +45,11 @@ To stop the server:
 python ./app.py stop
 ```
 
+#### Configuration
+
+See `config.py` for various configuration options.
+
 #### Test Clients:
 
-There's two example client scripts that connect to the socket and process streamed detection data.
+There's some example client scripts that connect to the relevant socket and process streamed detection data.
 
