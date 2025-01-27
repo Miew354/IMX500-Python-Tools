@@ -50,7 +50,7 @@ class DetectionQueue(queue.Queue):
                 return self.get()[0] 
             return None
 
-    def detection_timeout(self):
+    def detection_timeout_func(self):
         """Remove detections that have been in the queue longer than detection_timeout."""
         while True:
             with self.lock:
@@ -227,7 +227,7 @@ def start_server(mode, verbose=False):
         ).start()
     if detection_timeout > 0:
         threading.Thread(
-            target=detection_timeout,
+            target=detectionQ.detection_timeout_func,
             args=(detectionQ,),
             daemon=True
         ).start()
