@@ -36,16 +36,6 @@ class DetectionQueue(queue.Queue):
 
     def add_detection(self, detection):
         with self.lock:
-            # Remove old detections
-            while not self.empty():
-                _, timestamp = self.queue[0]
-                if (time.time() - timestamp) > detection_timeout:
-                    old_detection = self.get()
-                    if self.verbose:
-                        print(f"Detection timed out: {old_detection}")
-                else:
-                    break
-
             if self.full():
                 removed_detection = self.get()  # Remove the oldest detection if full
                 if self.verbose:
@@ -124,8 +114,8 @@ def udp_server(host, port, detection_queue: DetectionQueue):
                 print(f"New UDP client: {addr}")
         except socket.timeout:
             pass
-
-        # Send any available detection to all known clients
+        if not clients:
+            continue
         detection = detection_queue.get_detection()
         if detection:
             message = (json.dumps(detection) + "\n").encode()
