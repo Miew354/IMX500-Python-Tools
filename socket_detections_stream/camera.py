@@ -52,6 +52,7 @@ def manage_camera(start=True):
     if start:
         imx500.show_network_fw_progress_bar()
         picam2.start(config, show_preview=False)
+        return intrinsics
     else:
         picam2.stop()
 

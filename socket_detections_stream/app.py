@@ -55,13 +55,6 @@ server_socket = None  # Reference to the server socket
 clients = {}  # Dictionary to store connected clients
 client_id_counter = 0  # Counter to generate unique client IDs
 
-def get_labels():
-    """Get the labels from the dataset."""
-    with open(labels_path, "r") as f:
-        intrinsics.labels = f.read().splitlines()
-    labels = intrinsics.labels
-    return labels
-
 def unix_socket_server(socket_path, detection_queue: DetectionQueue):
     """Unix socket server that sends queued detections to connected clients."""
     global server_socket
@@ -127,8 +120,15 @@ def mock_detections(detection_queue: DetectionQueue):
 def detections_pipe(detection_queue: DetectionQueue):
     """Grab camera detections, and add them to the queue."""
     #start camera
-    manage_camera(start=True)
-    labels = get_labels()
+    intrinsics = manage_camera(start=True)
+    
+    #get labels
+    if intrinsics.labels is None:
+        with open("labels_path", "r") as f:
+            intrinsics.labels = f.read().splitlines()
+    labels = intrinsics.labels
+
+    #pipe detections
     while True:
         detections = get_detections()
         for detection in detections:
