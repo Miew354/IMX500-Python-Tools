@@ -166,9 +166,10 @@ def detections_pipe(detection_queue: DetectionQueue):
         detections = get_detections()
         for detection in detections:
 
-            label_conf = [
-            {"category": labels[int(detection.category)], "confidence": f"{detection.conf:.2f}"}
-            ]
+            label_conf = {
+                "category": labels[int(detection.category)],
+                "confidence": detection.conf
+            }
             
             detection_queue.add_detection(label_conf)
         time.sleep(stream_freq)
