@@ -36,10 +36,20 @@ class DetectionQueue(queue.Queue):
 
     def add_detection(self, detection):
         with self.lock:
+            # Remove old detections
+            while not self.empty():
+                _, timestamp = self.queue[0]
+                if (time.time() - timestamp) > detection_timeout:
+                    old_detection = self.get()
+                    if self.verbose:
+                        print(f"Detection timed out: {old_detection}")
+                else:
+                    break
+
             if self.full():
-                self.get()  # Remove the oldest detection to make space if full
+                removed_detection = self.get()  # Remove the oldest detection if full
                 if self.verbose:
-                    print("Queue is full. Removed oldest detections.")
+                    print("Queue is full. Removed oldest detections:", removed_detection)
             self.put((detection, time.time()))
             if self.verbose:
                 print(f"Detection added: {detection}")
@@ -47,12 +57,7 @@ class DetectionQueue(queue.Queue):
     def get_detection(self):
         with self.lock:
             while not self.empty():
-                detection, timestamp = self.queue[0]
-                if (time.time() - timestamp) > detection_timeout:  # remove old detections
-                    print(f"Detection timed out: {detection}")
-                    self.get()
-                else:
-                    return self.get()[0] 
+                return self.get()[0] 
             return None
 
 server_socket = None 
@@ -105,14 +110,13 @@ def unix_socket_server(socket_path, detection_queue: DetectionQueue):
             break
 
 def udp_server(host, port, detection_queue: DetectionQueue):
-    """UDP server for debug. Mimics functionality of the Unix socket server."""
+    """UDP socket for debug. Mimics functionality of the Unix socket."""
     udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_sock.bind((host, port))
     udp_sock.settimeout(0.1)
 
     clients = set()
     while True:
-        # Check for new clients
         try:
             data, addr = udp_sock.recvfrom(1024)
             if addr not in clients:
