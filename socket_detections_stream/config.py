@@ -10,6 +10,9 @@ detection_threshold = 0.5
 #Socket streaming frequency in seconds
 stream_freq = 0.5
 
+#Camera Frame rate
+frame_rate = 5
+
 #Detection timeout in seconds
 #Note: detection timeout only checked while a client is connected
 detection_timeout = 2

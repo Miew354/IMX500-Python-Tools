@@ -13,7 +13,7 @@ Usage:
 
 TODO:
     - Allow parsing of bounding box coordinates and camera resolution
-    - Add arguments for camera resolution and framerate to config
+    - Add arguments for camera resolution
 """
 
 import sys

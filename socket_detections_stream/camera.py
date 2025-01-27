@@ -9,7 +9,7 @@ from picamera2.devices import IMX500
 from picamera2.devices.imx500 import (NetworkIntrinsics, postprocess_nanodet_detection)
 
 import time
-from config import model, detection_threshold
+from config import model, detection_threshold, frame_rate
 
 detections = []
 imx500 = IMX500(model)
@@ -45,7 +45,7 @@ def manage_camera(start=True):
         print("The selected model is not object detection", file=sys.stderr)
         exit()
 
-    config = picam2.create_preview_configuration(controls={"FrameRate": 5}, buffer_count=12)
+    config = picam2.create_preview_configuration(controls={"FrameRate": frame_rate}, buffer_count=12)
 
     if start:
         imx500.show_network_fw_progress_bar()
