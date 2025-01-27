@@ -168,7 +168,7 @@ def detections_pipe(detection_queue: DetectionQueue):
 
             label_conf = {
                 "category": labels[int(detection.category)],
-                "confidence": detection.conf
+                "confidence": float(detection.conf)
             }
             
             detection_queue.add_detection(label_conf)
