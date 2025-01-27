@@ -125,9 +125,13 @@ def udp_server(host, port, detection_queue: DetectionQueue):
         # Send any available detection to all known clients
         detection = detection_queue.get_detection()
         if detection:
-            payload = json.dumps({"detection": detection}).encode("utf-8")
-            for client_addr in clients:
-                udp_sock.sendto(payload, client_addr)
+            message = (json.dumps(detection) + "\n").encode()
+            for client_addr in list(clients):
+                try:
+                    udp_sock.sendto(message, client_addr)
+                except OSError:
+                    print(f"Client {client_addr} disconnected")
+                    clients.remove(client_addr)
 
 def generate_mock_detections():
     """Generate mock detections."""
