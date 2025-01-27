@@ -49,8 +49,7 @@ class DetectionQueue(queue.Queue):
             while not self.empty():
                 detection, timestamp = self.queue[0]
                 if (time.time() - timestamp) > detection_timeout:  # remove old detections
-                    if self.verbose:
-                        print(f"Detection timed out: {detection}")
+                    print(f"Detection timed out: {detection}")
                     self.get()
                 else:
                     return self.get()[0] 
@@ -127,11 +126,24 @@ def udp_server(host, port, detection_queue: DetectionQueue):
         if detection:
             message = (json.dumps(detection) + "\n").encode()
             for client_addr in list(clients):
+                udp_sock.sendto(message, client_addr)
                 try:
-                    udp_sock.sendto(message, client_addr)
-                except socket.error:
-                    print(f"Client {client_addr} disconnected")
-                    clients.remove(client_addr)
+                    udp_sock.recv
+                except socket.timeout:
+                    pass
+                # Send any available detection to all known clients
+                detection = detection_queue.get_detection()
+                if detection:
+                    message = (json.dumps(detection) + "\n").encode()
+                    for client_addr in list(clients):
+                        try:
+                            udp_sock.sendto(message, client_addr)
+                            # Check for client heartbeat
+                            udp_sock.settimeout(1)
+                            udp_sock.recvfrom(1024)
+                        except socket.timeout:
+                            print(f"Client {client_addr} timed out")
+                            clients.remove(client_addr)
 
 def generate_mock_detections():
     """Generate mock detections."""

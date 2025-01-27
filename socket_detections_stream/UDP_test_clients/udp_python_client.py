@@ -25,6 +25,7 @@ def main():
             if not data:
                 break
             buffer += data.decode()
+            sock.sendto(b"heartbeat", (host, port))
             while "\n" in buffer:
                 line, buffer = buffer.split("\n", 1)
                 try:
