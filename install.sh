@@ -28,6 +28,9 @@ source IMX500-Python-Tools/bin/activate
 # Uninstall conflicting NumPy
 pip uninstall -y numpy
 
+# Download COCO labels for default detection model
+curl -o /usr/share/imx500-models/coco_labels.txt https://raw.githubusercontent.com/amikelive/coco-labels/refs/heads/master/coco-labels-paper.txt
+
 echo "Setup complete. You can now run the application using './run.sh'."
 
 # Reboot option:

@@ -1,3 +1,5 @@
+#TODO Add label maps for the model
+
 import sys
 from functools import lru_cache
 
@@ -54,8 +56,9 @@ def manage_camera(start=True):
         picam2.stop()
 
 def get_detections():
-    while True:
-        metadata = picam2.capture_metadata()
-        detections = parse_detections(metadata)
-        return detections
+    metadata = picam2.capture_metadata()
+    detections = parse_detections(metadata)
+    if detections is None:
+        return
+    return detections
     
