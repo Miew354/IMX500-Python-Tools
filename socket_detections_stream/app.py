@@ -24,7 +24,7 @@ import os
 import random
 import time
 import json
-from config import stream_freq, detection_timeout, queue_maxsize, labels_path
+from config import stream_freq, detection_timeout, queue_maxsize, labels_path, use_udp, udp_host, udp_port
 from camera import manage_camera, get_detections
 
 class DetectionQueue(queue.Queue):
@@ -105,6 +105,30 @@ def unix_socket_server(socket_path, detection_queue: DetectionQueue):
             print("Server stopped.")
             break
 
+def udp_server(host, port, detection_queue: DetectionQueue):
+    """UDP server for debug. Mimics functionality of the Unix socket server."""
+    udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_sock.bind((host, port))
+    udp_sock.settimeout(0.1)
+
+    clients = set()
+    while True:
+        # Check for new clients
+        try:
+            data, addr = udp_sock.recvfrom(1024)
+            if addr not in clients:
+                clients.add(addr)
+                print(f"New UDP client: {addr}")
+        except socket.timeout:
+            pass
+
+        # Send any available detection to all known clients
+        detection = detection_queue.get_detection()
+        if detection:
+            payload = json.dumps({"detection": detection}).encode("utf-8")
+            for client_addr in clients:
+                udp_sock.sendto(payload, client_addr)
+
 def generate_mock_detections():
     """Generate mock detections."""
     categories = ["person", "bicycle", "car", "motorcycle", "airplane", "evil_cat"]
@@ -144,11 +168,19 @@ def detections_pipe(detection_queue: DetectionQueue):
 detectionQ = DetectionQueue(maxsize=queue_maxsize)
 
 def start_server(mode, verbose=False):
-    threading.Thread(
-        target=unix_socket_server,
-        args=("/tmp/detections.sock", detectionQ),
-        daemon=True
-    ).start()
+    if use_udp:
+        print(f"UDP mode enabled on {udp_host}:{udp_port}")
+        threading.Thread(
+            target=udp_server,
+            args=(udp_host, udp_port, detectionQ),
+            daemon=True
+        ).start()
+    else:
+        threading.Thread(
+            target=unix_socket_server,
+            args=("/tmp/detections.sock", detectionQ),
+            daemon=True
+        ).start()
     if mode == "mock":
         threading.Thread(
             target=mock_detections,

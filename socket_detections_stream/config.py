@@ -16,3 +16,8 @@ detection_timeout = 2
 
 #Maximum items in the detection queue
 queue_maxsize = 10
+
+#Set True to enable built in UDP mode for remote testing (Leave False for Unix socket)
+use_udp = False  
+udp_host = "0.0.0.0"
+udp_port = 5005
