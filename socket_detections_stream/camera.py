@@ -24,19 +24,19 @@ class Detection:
 
 def parse_detections(metadata: dict):
     """Parse the output tensor into a list of Detection objects and confidences."""
-    global detections
-
     np_outputs = imx500.get_outputs(metadata, add_batch=True)
-    input_h = imx500.get_input_size()
     if np_outputs is None:
-        return detections
-    scores, classes = np_outputs[1][0], np_outputs[2][0]
+        return []
 
-    detections = [
-        Detection(category, score)
-        for score, category in zip(scores, classes)
-    ]
-    return detections
+    scores, classes = np_outputs[1][0], np_outputs[2][0]
+    threshold = 0.5  # Adjust as needed
+
+    filtered_detections = []
+    for score, category in zip(scores, classes):
+        if score >= threshold:
+            filtered_detections.append(Detection(category, score))
+
+    return filtered_detections
 
 def manage_camera(start=True):
     intrinsics = imx500.network_intrinsics
@@ -62,4 +62,3 @@ def get_detections():
     if detections is None:
         return
     return detections
-    
