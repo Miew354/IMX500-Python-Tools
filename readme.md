@@ -27,16 +27,16 @@ This script pipes the detections to a Unix socket in JSON format.
 
 #### Usage
 
-To start the server and pipe generated mock detections:
+To start the server then pipe and echo generated mock detections:
 
 ```bash
-python ./app.py start mock
+python ./app.py start mock --verbose
 ```
 
-To start the server, camera and pipe IMX500 detections:
+To start the server, camera then pipe and echo IMX500 detections:
 
 ```bash
-python ./app.py start camera
+python ./app.py start camera --verbose
 ```
 
 To stop the server:
@@ -47,4 +47,5 @@ python ./app.py stop
 
 #### Test Clients:
 
-There's two example client scripts that connect to the socket and process detection data.
+There's two example client scripts that connect to the socket and process streamed detection data.
+

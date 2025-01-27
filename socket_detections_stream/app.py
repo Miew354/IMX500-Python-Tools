@@ -6,9 +6,14 @@ Args:
     stop: stop the server
     mock: generate and pipe mock detections
     camera: pipe camera detections
+    --verbose: print detection messages
 
 Usage:
     python detections_queue.py [start|stop] [mock|camera]
+
+TODO:
+    - Allow parsing of bounding box coordinates and camera resolution
+    - Add arguments for camera resolution and framerate to config
 """
 
 import sys
@@ -19,11 +24,8 @@ import os
 import random
 import time
 import json
-from config import model, labels_path
+from config import stream_freq, detection_timeout, queue_maxsize, labels_path
 from camera import manage_camera, get_detections
-
-detection_timeout = 5 # Set the detection datapoint timeout in seconds
-queue_maxsize = 100  # Set the maximum items in the detection queue
 
 class DetectionQueue(queue.Queue):
     """Queue to store AI detections."""
@@ -35,8 +37,9 @@ class DetectionQueue(queue.Queue):
     def add_detection(self, detection):
         with self.lock:
             if self.full():
-                print("Queue is full. Removing oldest detections...")
                 self.get()  # Remove the oldest detection to make space
+                if self.verbose:
+                    print("Queue is full. Removed oldest detections.")
             self.put((detection, time.time()))
             if self.verbose:
                 print(f"Detection added: {detection}")
@@ -47,6 +50,8 @@ class DetectionQueue(queue.Queue):
                 detection, timestamp = self.queue[0]
                 if time.time() - timestamp > detection_timeout:  # remove old detections
                     self.get()
+                    if self.verbose:
+                        print(f"Detection timed out: {detection}")
                 else:
                     return self.get()[0]  # Return only the detection part
             return None
@@ -115,16 +120,16 @@ def mock_detections(detection_queue: DetectionQueue):
         detections = generate_mock_detections()
         for detection in detections:
             detection_queue.add_detection(detection)
-        time.sleep(1)
+        time.sleep(stream_freq)
 
 def detections_pipe(detection_queue: DetectionQueue):
     """Grab camera detections, and add them to the queue."""
     #start camera
     intrinsics = manage_camera(start=True)
-    
+
     #get labels
     if intrinsics.labels is None:
-        with open("labels_path", "r") as f:
+        with open(labels_path, "r") as f:
             intrinsics.labels = f.read().splitlines()
     labels = intrinsics.labels
 
@@ -134,7 +139,7 @@ def detections_pipe(detection_queue: DetectionQueue):
         for detection in detections:
             label_conf = f"{labels[int(detection.category)]} ({detection.conf:.2f})"
             detection_queue.add_detection(label_conf)
-        time.sleep(1)
+        time.sleep(stream_freq)
 
 detectionQ = DetectionQueue(maxsize=queue_maxsize)
 

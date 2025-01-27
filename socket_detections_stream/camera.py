@@ -1,4 +1,3 @@
-#TODO Add label maps for the model
 
 import sys
 from functools import lru_cache
@@ -10,7 +9,7 @@ from picamera2.devices import IMX500
 from picamera2.devices.imx500 import (NetworkIntrinsics, postprocess_nanodet_detection)
 
 import time
-from config import model
+from config import model, detection_threshold
 
 detections = []
 imx500 = IMX500(model)
@@ -29,11 +28,10 @@ def parse_detections(metadata: dict):
         return []
 
     scores, classes = np_outputs[1][0], np_outputs[2][0]
-    threshold = 0.5  # Adjust as needed
 
     filtered_detections = []
     for score, category in zip(scores, classes):
-        if score >= threshold:
+        if score >= detection_threshold:
             filtered_detections.append(Detection(category, score))
 
     return filtered_detections
