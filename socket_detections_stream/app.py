@@ -67,13 +67,14 @@ class DetectionQueue(queue.Queue):
                         break
             time.sleep(detection_timeout)
 
-server_socket = None 
-clients = {}  # Dictionary of connected clients
-client_id_counter = 0  # generate unique client IDs
+server_socket = None
+client_id_counter = 0
 
 def unix_socket_server(socket_path, detection_queue: DetectionQueue):
     """Unix socket server that sends queued detections to connected clients."""
-    global server_socket
+    global server_socket 
+    clients = {}
+
     if os.path.exists(socket_path):
         os.remove(socket_path)
 
@@ -118,14 +119,15 @@ def unix_socket_server(socket_path, detection_queue: DetectionQueue):
 
 def udp_server(host, port, detection_queue: DetectionQueue):
     """UDP socket for debug. Mimics functionality of the Unix socket."""
-    udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp_sock.bind((host, port))
-    udp_sock.settimeout(0.1)
-
+    global server_socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.bind((host, port))
+    server_socket.settimeout(0.1)
+    
     clients = set()
     while True:
         try:
-            data, addr = udp_sock.recvfrom(1024)
+            data, addr = server_socket.recvfrom(1024)
             if addr not in clients:
                 clients.add(addr)
                 print(f"New UDP client: {addr}")
@@ -137,9 +139,9 @@ def udp_server(host, port, detection_queue: DetectionQueue):
         if detection:
             message = (json.dumps(detection) + "\n").encode()
             for client_addr in list(clients):
-                udp_sock.sendto(message, client_addr)
+                server_socket.sendto(message, client_addr)
                 try:
-                    udp_sock.recv
+                    server_socket.recv
                 except socket.timeout:
                     pass
                 # Send any available detection to all known clients
@@ -148,10 +150,10 @@ def udp_server(host, port, detection_queue: DetectionQueue):
                     message = (json.dumps(detection) + "\n").encode()
                     for client_addr in list(clients):
                         try:
-                            udp_sock.sendto(message, client_addr)
+                            server_socket.sendto(message, client_addr)
                             # Check for client heartbeat
-                            udp_sock.settimeout(1)
-                            udp_sock.recvfrom(1024)
+                            server_socket.settimeout(1)
+                            server_socket.recvfrom(1024)
                         except socket.timeout:
                             print(f"Client {client_addr} timed out")
                             clients.remove(client_addr)
