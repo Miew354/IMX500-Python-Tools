@@ -1,15 +1,11 @@
 """
-Pipe the detections to the Unix socket in JSON format.
-
 Args:
     start: start the server
     stop: stop the server
     mock: generate and pipe mock detections
     camera: pipe camera detections
     --verbose: print detection messages
-
-Usage:
-    python detections_queue.py [start|stop] [mock|camera]
+    --udp: enable UDP mode for remote testing
 
 TODO:
     - Allow parsing of bounding box coordinates and camera resolution
@@ -20,11 +16,16 @@ import sys
 import queue
 import socket
 import threading
-import random
+if "mock" in sys.argv:
+    import random
 import os
 import time
 import json
-from config import stream_freq, detection_timeout, queue_maxsize, labels_path, use_udp, udp_host, udp_port
+from config import stream_freq, detection_timeout, queue_maxsize, labels_path, timeout_check_freq
+if "--udp" in sys.argv:
+    from config import udp_host, udp_port
+if "camera" in sys.argv:
+    from camera import manage_camera, get_detections
 
 class DetectionQueue(queue.Queue):
     """Queue to store AI detections."""
@@ -62,7 +63,7 @@ class DetectionQueue(queue.Queue):
                             print("Detection Timeout:", removed_detection)
                     else:
                         break
-            time.sleep(detection_timeout)
+            time.sleep(timeout_check_freq)
 
 server_socket = None
 client_id_counter = 0
@@ -175,7 +176,6 @@ def mock_detections(detection_queue: DetectionQueue):
 
 def detections_pipe(detection_queue: DetectionQueue):
     """Grab camera detections, and add them to the queue."""
-    from camera import manage_camera, get_detections
     #start camera
     intrinsics = manage_camera(start=True)
 
@@ -200,8 +200,8 @@ def detections_pipe(detection_queue: DetectionQueue):
 
 detectionQ = DetectionQueue(maxsize=queue_maxsize)
 
-def start_server(mode, verbose=False):
-    if use_udp:
+def start_server(mode, verbose=False, udp_enabled=False):
+    if udp_enabled:
         print(f"UDP mode enabled on {udp_host}:{udp_port}")
         threading.Thread(
             target=udp_server,
@@ -242,18 +242,18 @@ def stop_server():
         manage_camera(start=False)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3 or len(sys.argv) > 4:
-        print("Usage: python detections_queue.py [start|stop] [mock|camera] [--verbose]")
+    if len(sys.argv) < 3 or len(sys.argv) > 5:
+        print("Usage: python detections_queue.py [start|stop] [mock|camera] [--verbose] [--udp]")
         sys.exit(1)
-
     command = sys.argv[1]
     mode = sys.argv[2]
     verbose = "--verbose" in sys.argv
+    udp_enabled = "--udp" in sys.argv
 
     detectionQ = DetectionQueue(maxsize=queue_maxsize, verbose=verbose)
 
     if command == "start":
-        start_server(mode, verbose)
+        start_server(mode, verbose, udp_enabled)
         print("Press Ctrl+C to exit...")
         try:
             while True:

@@ -15,11 +15,12 @@ frame_rate = 20
 
 #Detection timeout in seconds, set to zero to disable
 detection_timeout = 2
+#Frequency to check for stale detections in seconds
+timeout_check_freq = 0.5
 
 #Maximum items in the detection queue
-queue_maxsize = 100
+queue_maxsize = 10
 
-#Set True to enable built in UDP mode for remote testing (Leave False for Unix socket)
-use_udp = False  
+#enable UDP mode with '--udp' for remote testing
 udp_host = "0.0.0.0"
 udp_port = 5005

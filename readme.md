@@ -19,30 +19,17 @@ source IMX500-Python-Tools/bin/activate
 
 ### model_chacher/model_cacher.py
 
-    A simple script that caches a selected model on the IMX500 by starting and stopping the camera. 
+A simple script that caches a selected model on the IMX500 by starting and stopping the camera. 
 
 ### socket_detections_stream/app.py
 
 This script pipes the detections to a Unix socket in JSON format.
+Includes debug options to enable easier development and testing outside of raspi, such as mock detections generator and UDP mode. 
 
 #### Usage
 
-To start the server then pipe and echo generated mock detections:
-
 ```bash
-python ./app.py start mock --verbose
-```
-
-To start the server, camera then pipe and echo IMX500 detections:
-
-```bash
-python ./app.py start camera --verbose
-```
-
-To stop the server:
-
-```bash
-python ./app.py stop
+python socket_stream.py [start|stop] [mock|camera] [--verbose] [--udp]
 ```
 
 #### Configuration
@@ -51,5 +38,9 @@ See `config.py` for various configuration options.
 
 #### Test Clients:
 
-There's some example client scripts that connect to the relevant socket and process streamed detection data.
+Example client scripts that connect to the relevant socket and process streamed detection data.
+
+### TODO:
+- Allow parsing of bounding box coordinates and camera resolution
+- Allow custom arguments for camera resolution
 
