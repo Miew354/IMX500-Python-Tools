@@ -20,12 +20,11 @@ import sys
 import queue
 import socket
 import threading
-import os
 import random
+import os
 import time
 import json
 from config import stream_freq, detection_timeout, queue_maxsize, labels_path, use_udp, udp_host, udp_port
-from camera import manage_camera, get_detections
 
 class DetectionQueue(queue.Queue):
     """Queue to store AI detections."""
@@ -55,8 +54,6 @@ class DetectionQueue(queue.Queue):
         while True:
             with self.lock:
                 current_time = time.time()
-                if detection_timeout <= 0:
-                    return
                 while not self.empty():
                     detection, timestamp = self.queue[0]
                     if current_time - timestamp > detection_timeout:
@@ -131,8 +128,9 @@ def udp_server(host, port, detection_queue: DetectionQueue):
             if addr not in clients:
                 clients.add(addr)
                 print(f"New UDP client: {addr}")
-        except socket.timeout:
-            pass
+        except OSError:
+            print("Server stopped.")
+            break
         if not clients:
             continue
         detection = detection_queue.get_detection()
@@ -177,6 +175,7 @@ def mock_detections(detection_queue: DetectionQueue):
 
 def detections_pipe(detection_queue: DetectionQueue):
     """Grab camera detections, and add them to the queue."""
+    from camera import manage_camera, get_detections
     #start camera
     intrinsics = manage_camera(start=True)
 
@@ -230,7 +229,6 @@ def start_server(mode, verbose=False):
     if detection_timeout > 0:
         threading.Thread(
             target=detectionQ.detection_timeout_func,
-            args=(detectionQ,),
             daemon=True
         ).start()
 
