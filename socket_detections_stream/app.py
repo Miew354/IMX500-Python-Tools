@@ -238,6 +238,7 @@ def stop_server():
         server_socket.close()
     if mode == "camera":
         print("Stopping camera...")
+        from camera import manage_camera
         manage_camera(start=False)
 
 if __name__ == "__main__":
