@@ -14,7 +14,8 @@ stream_freq = 0.5
 frame_rate = 20
 
 #Detection timeout in seconds, set to zero to disable
-detection_timeout = 2
+#Note detection_timeout is redundant if clients are connected and stream_freq < detection_timeout
+detection_timeout = 0
 #Frequency to check for stale detections in seconds
 timeout_check_freq = 0.5
 

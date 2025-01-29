@@ -16,12 +16,13 @@ import sys
 import queue
 import socket
 import threading
-if "mock" in sys.argv:
-    import random
 import os
 import time
 import json
 from config import stream_freq, detection_timeout, queue_maxsize, labels_path, timeout_check_freq
+#Conditional modules:
+if "mock" in sys.argv:
+    import random
 if "--udp" in sys.argv:
     from config import udp_host, udp_port
 if "camera" in sys.argv:
@@ -66,7 +67,7 @@ class DetectionQueue(queue.Queue):
             time.sleep(timeout_check_freq)
 
 server_socket = None
-client_id_counter = 0
+client_id_counter = 0 #assists generating unique client ID
 
 def unix_socket_server(socket_path, detection_queue: DetectionQueue):
     """Unix socket server that sends queued detections to connected clients."""
@@ -93,7 +94,7 @@ def unix_socket_server(socket_path, detection_queue: DetectionQueue):
                     message = (json.dumps(detection) + "\n").encode()
                     for client in list(clients.keys()):
                         try:
-                            client.sendall(message)
+                            client.sendall(message) # Send detection to all connected clients
                         except:
                             print(f"Client {clients[client]} disconnected")
                             clients.pop(client, None)
@@ -111,13 +112,12 @@ def unix_socket_server(socket_path, detection_queue: DetectionQueue):
             client_thread.daemon = True
             client_thread.start()
         except OSError as e:
-            # Server closed
             print("Server stopped.")
             if detection_queue.verbose:
                 print(f"OSError: {e}")
             break
 
-def udp_server(host, port, detection_queue: DetectionQueue):
+def udp_server(host, port, detection_queue: DetectionQueue): #intended for debug only
     """UDP socket for debug. Mimics functionality of the Unix socket."""
     global server_socket 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -239,7 +239,7 @@ def start_server(mode, verbose=False, udp_enabled=False):
         ).start()
 
 def stop_server():
-    """Close the server socket if running."""
+    """Close the server socket and stop the camera."""
     if server_socket:
         server_socket.close()
     if mode == "camera":
