@@ -110,7 +110,7 @@ def unix_socket_server(socket_path, detection_queue: DetectionQueue):
             client_thread = threading.Thread(target=handle_client, args=(client_conn,))
             client_thread.daemon = True
             client_thread.start()
-        except OSError:
+        except OSError as e:
             # Server closed
             print("Server stopped.")
             if detection_queue.verbose:
@@ -131,7 +131,9 @@ def udp_server(host, port, detection_queue: DetectionQueue):
             if addr not in clients:
                 clients.add(addr)
                 print(f"New UDP client: {addr}")
-        except OSError:
+        except TimeoutError:
+            pass
+        except OSError as e:
             print("Server stopped.")
             if detection_queue.verbose:
                 print(f"OSError: {e}")
