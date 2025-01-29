@@ -113,14 +113,16 @@ def unix_socket_server(socket_path, detection_queue: DetectionQueue):
         except OSError:
             # Server closed
             print("Server stopped.")
+            if detection_queue.verbose:
+                print(f"OSError: {e}")
             break
 
 def udp_server(host, port, detection_queue: DetectionQueue):
     """UDP socket for debug. Mimics functionality of the Unix socket."""
-    global server_socket
+    global server_socket 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind((host, port))
-    server_socket.settimeout(0.1)
+    server_socket.settimeout(0.5)
     
     clients = set()
     while True:
@@ -131,6 +133,8 @@ def udp_server(host, port, detection_queue: DetectionQueue):
                 print(f"New UDP client: {addr}")
         except OSError:
             print("Server stopped.")
+            if detection_queue.verbose:
+                print(f"OSError: {e}")
             break
         if not clients:
             continue

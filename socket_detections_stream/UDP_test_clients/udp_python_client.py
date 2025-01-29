@@ -4,7 +4,7 @@ import json
 category = "evil_cat"  # category to trigger on
 confidence = 0.8  # confidence threshold
 
-host = "127.0.0.1" # server IP
+host = "192.168.15.206" # server IP
 port = 5005 # server port
 
 def colorize(text, color_code):
